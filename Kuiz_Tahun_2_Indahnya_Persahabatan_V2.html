@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kuiz Tahun 2 - Indahnya Persahabatan</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+.wrap{max-width:1100px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h1{margin:0;font-size:30px}.pill{background:#fff;border:1px solid #dce3ee;border-radius:999px;padding:9px 14px;font-weight:700}
+.card{background:#fff;border:1px solid #dce3ee;border-radius:20px;padding:24px;margin-top:16px}
+.q{font-size:clamp(25px,4vw,42px);font-weight:800;line-height:1.2;margin:14px 0 24px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}.opt{border:2px solid #dce3ee;background:#f9fbfe;border-radius:15px;padding:18px;font-size:20px;font-weight:700}
+.control{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.btn{border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer;font-size:16px;background:#e8eef7}.btn.primary{background:#2457d6;color:white}.btn.bonus{background:#ffe7a3}.btn.danger{background:#ffd9d9}
+.msg{text-align:center;font-weight:800;font-size:20px;min-height:30px;margin-top:18px}
+.teams{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px}.team{background:#fff;border:2px solid #dce3ee;border-radius:16px;padding:14px;text-align:center}.team h3{margin:0 0 8px;font-size:15px}.score{font-size:30px;font-weight:900}.team button{width:100%;margin-top:7px;padding:9px;border:0;border-radius:9px;background:#edf2f8;font-weight:800;cursor:pointer}.team .plus{background:#dff3e4}.team .bonus{background:#fff0bf}.team .minus{background:#ffe0e0}
+.hidden{display:none}.winner{text-align:center;font-size:32px;font-weight:900;padding:25px}
+.small{color:#61708a;font-size:14px}
+@media(max-width:750px){.opts{grid-template-columns:1fr}.teams{grid-template-columns:1fr 1fr}.team:last-child{grid-column:span 2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<h1>🎮 Kuiz Indahnya Persahabatan</h1>
+<div class="pill">Tahun 2 • <span id="qnum">1</span>/20</div>
+<div class="pill">⏱️ <span id="timer">15</span>s</div>
+</div>
+
+<div class="card" id="game">
+<div class="small">Bincang bersama kumpulan • Tulis jawapan pada mini whiteboard • Bila masa tamat: ANGKAT PAPAN!</div>
+<div class="q" id="question"></div>
+<div class="opts" id="options"></div>
+<div class="msg" id="msg">Sedia? Tekan “Mula Countdown”.</div>
+<div class="control">
+<button class="btn primary" id="start">▶ Mula Countdown</button>
+<button class="btn" id="next">Soalan Seterusnya →</button>
+<button class="btn bonus" id="bonusAll">⭐ Bonus +20</button>
+<button class="btn danger" id="reset">↻ Reset</button>
+</div>
+</div>
+
+<div class="teams" id="teams"></div>
+<div class="card hidden" id="finish"></div>
+<p class="small">Tip guru: selepas murid angkat papan, tekan +10 pada setiap kumpulan yang betul. Untuk soalan bonus, tekan +20.</p>
+</div>
+
+<script>
+const questions=[
+["Ali terjatuh ketika bermain. Apakah tindakan yang menunjukkan persahabatan yang baik?",["Ketawa","Membantu Ali","Meninggalkan Ali","Menyalahkan Ali"],"B"],
+["Apakah ucapan yang sesuai apabila bertemu kawan?",["Selamat tinggal","Terima kasih","Assalamualaikum","Maafkan saya"],"C"],
+["Kawan memberikan pensel kepada kita. Apakah yang patut kita ucapkan?",["Selamat jalan","Terima kasih","Jangan kacau","Saya marah"],"B"],
+["Jika kawan kita sedih, apakah yang patut kita lakukan?",["Mengejeknya","Membiarkannya","Menghibur dan membantunya","Mentertawakannya"],"C"],
+["Apakah sikap yang boleh mengeratkan persahabatan?",["Saling membantu","Suka bergaduh","Suka mengejek","Mementingkan diri"],"A"],
+["Kawan terlupa membawa pemadam. Apakah tindakan yang baik?",["Memarahinya","Meminjamkan pemadam","Mengejeknya","Menyembunyikan pemadam"],"B"],
+["Apakah sikap yang perlu ada apabila kawan bercakap?",["Menyampuk","Mendengar dengan baik","Berteriak","Berjalan pergi"],"B"],
+["Jika kita melakukan kesalahan kepada kawan, apakah yang patut kita lakukan?",["Meminta maaf","Ketawa","Melarikan diri","Menyalahkan kawan"],"A"],
+["Apakah maksud membantu kawan?",["Menyusahkan kawan","Menolong kawan ketika perlu","Mengejek kawan","Mengambil barang kawan"],"B"],
+["Kawan mendapat hadiah. Apakah tindakan yang baik?",["Cemburu","Mengucapkan tahniah","Merampas hadiah","Mengejeknya"],"B"],
+["Apakah sikap yang tidak baik dalam persahabatan?",["Jujur","Amanah","Suka mengejek","Suka membantu"],"C"],
+["Kawan berkongsi makanan dengan kita. Apakah sikap yang baik?",["Menghargai dan berterima kasih","Membuangnya","Meminta semuanya","Mengejek makanan"],"A"],
+["Apakah cara menjaga perasaan kawan?",["Bercakap dengan sopan","Mengejeknya","Menjerit kepadanya","Memalukan kawan"],"A"],
+["Jika dua orang kawan bergaduh, apakah tindakan yang baik?",["Menyemarakkan pergaduhan","Mendamaikan mereka","Menertawakan mereka","Memilih untuk bergaduh"],"B"],
+["Mengapa kita perlu bersikap jujur kepada kawan?",["Supaya kawan boleh mempercayai kita","Supaya kita boleh menang","Supaya kawan takut","Supaya kita dipuji"],"A"],
+["Apakah contoh berkongsi dengan kawan?",["Menyimpan semua barang","Memberi sebahagian makanan","Merampas barang","Menyembunyikan buku"],"B"],
+["Apabila kawan meminta pertolongan yang baik, apakah yang patut kita lakukan?",["Membantu jika mampu","Mengejeknya","Terus marah","Berpura-pura tidak dengar"],"A"],
+["Apakah sifat yang menjadikan kita kawan yang baik?",["Penyayang","Pendendam","Pemarah","Sombong"],"A"],
+["Kawan melakukan kesilapan. Apakah cara yang baik untuk menegurnya?",["Dengan kasar","Dengan mengejek","Dengan sopan","Dengan menjerit"],"C"],
+["Apakah kesan mempunyai sahabat yang baik?",["Hidup lebih harmoni","Selalu bergaduh","Tidak mahu membantu","Saling membenci"],"A"]
+];
+const names=["Al-Falah","Al-Hikmah","Al-Ikhlas","Al-Amin","Al-Iman"];
+let qi=0,scores=[0,0,0,0,0],timer=null,left=15;
+
+const $=id=>document.getElementById(id);
+function renderTeams(){
+ $("teams").innerHTML=names.map((n,i)=>`<div class="team"><h3>Kumpulan ${i+1}<br>${n}</h3><div class="score" id="s${i}">${scores[i]}</div><button class="plus" data-i="${i}" data-points="10">+10 Betul</button><button class="bonus" data-i="${i}" data-points="20">⭐ +20 Bonus</button><button class="minus" data-i="${i}" data-points="-10">−10</button></div>`).join("");
+ $("teams").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+   const i=+b.dataset.i,p=+b.dataset.points;scores[i]=Math.max(0,scores[i]+p);renderTeams();
+   $("msg").textContent=(p>0?`${names[i]} +${p} mata!`:`${names[i]} −10 mata.`);
+ }));
+}
+function render(){
+ const [q,o,a]=questions[qi];$("qnum").textContent=qi+1;$("question").textContent=q;
+ $("options").innerHTML=o.map((x,i)=>`<div class="opt">${"ABCD"[i]}. ${x}</div>`).join("");
+ $("msg").textContent="Bincang dan tulis jawapan pada whiteboard.";
+ $("timer").textContent=15;left=15;clearInterval(timer);
+}
+$("start").addEventListener("click",()=>{
+ clearInterval(timer);left=15;$("timer").textContent=left;$("msg").textContent="Masa bermula! Tulis jawapan...";
+ timer=setInterval(()=>{left--;$("timer").textContent=left;if(left<=0){
+clearInterval(timer);
+const correctIndex="ABCD".indexOf(questions[qi][2]);
+const correctText=questions[qi][1][correctIndex];
+$("msg").innerHTML='✋ MASA TAMAT — ANGKAT PAPAN!<div style="margin-top:12px;padding:14px 18px;border-radius:14px;background:#dff3e4;border:2px solid #73c78a;color:#155724;font-size:24px">✅ JAWAPAN BETUL: <strong>'+questions[qi][2]+'. '+correctText+'</strong></div>';
+}},1000);
+});
+$("next").addEventListener("click",()=>{
+ if(qi<questions.length-1){qi++;render();}else{
+   clearInterval(timer);$("game").classList.add("hidden");$("finish").classList.remove("hidden");
+   const max=Math.max(...scores),win=names.filter((_,i)=>scores[i]===max);
+   $("finish").innerHTML=`<div class="winner">🏆 TAHNIAH!<br>${win.join(" & ")}<br><span style="font-size:20px">Juara dengan ${max} mata!</span></div>`;
+ }
+});
+$("bonusAll").addEventListener("click",()=>{ $("msg").textContent="Pilih kumpulan di bawah untuk beri Bonus +20.";});
+$("reset").addEventListener("click",()=>{scores=[0,0,0,0,0];qi=0;$("game").classList.remove("hidden");$("finish").classList.add("hidden");renderTeams();render();});
+renderTeams();render();
+</script>
+</body>
+</html>
