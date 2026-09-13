@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuiz Tahun 2 - Perkenankan Doaku</title>
+<style>
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#e8f5e9,#e3f2fd);margin:0;padding:20px;color:#17324d}
+.wrap{max-width:1100px;margin:auto}
+h1{text-align:center;color:#176b45;margin:5px 0 8px;font-size:34px}
+.sub{text-align:center;font-weight:bold;color:#477}
+.pills{text-align:center;margin:15px 0}.pill{display:inline-block;background:white;border-radius:20px;padding:9px 18px;margin:4px;font-weight:bold;box-shadow:0 3px 10px #0001}
+.card{background:white;border-radius:24px;padding:24px;box-shadow:0 6px 20px #0002;margin-bottom:18px}
+.question{font-size:28px;font-weight:bold;text-align:center;line-height:1.35;margin:20px 0}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{background:#f4f8fb;border:2px solid #d8e4ed;border-radius:15px;padding:16px;font-size:20px}
+.msg{text-align:center;font-size:22px;font-weight:bold;min-height:48px;margin:18px 0}
+.control{text-align:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+button{border:0;border-radius:13px;padding:13px 18px;font-size:17px;font-weight:bold;cursor:pointer;background:#e8eef3}
+button.primary{background:#1976d2;color:white} button.answer{background:#f6a800;color:white}
+button.next{background:#176b45;color:white} button.danger{background:#d9534f;color:white}
+button:disabled{opacity:.45;cursor:not-allowed}
+.teams{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.team{background:#f8fbfd;border:2px solid #d9e5eb;border-radius:16px;padding:12px;text-align:center}
+.team h3{margin:3px 0 8px;font-size:17px}.score{font-size:30px;font-weight:bold;margin:5px}
+.team button{padding:8px 7px;font-size:13px;margin:2px}
+.plus{background:#35a853;color:white}.bonus{background:#f6a800;color:white}.minus{background:#d9534f;color:white}
+.hidden{display:none}.winner{text-align:center;font-size:34px;font-weight:bold;padding:40px}
+.correct{margin-top:12px;padding:14px 18px;border-radius:14px;background:#dff3e4;border:2px solid #73c78a;color:#155724;font-size:24px}
+@media(max-width:750px){.teams{grid-template-columns:1fr 1fr}.options{grid-template-columns:1fr}.question{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🌙 KUIZ PERKENANKAN DOAKU 🌙</h1>
+<div class="sub">Pendidikan Islam • Tahun 2</div>
+
+<div id="game">
+<div class="pills">
+<span class="pill">Tahun 2 • <span id="qnum">1</span>/15</span>
+<span class="pill">⏱️ <span id="timer">20</span>s</span>
+</div>
+
+<div class="card">
+<div class="question" id="question"></div>
+<div class="options" id="options"></div>
+<div class="msg" id="msg">Sedia? Tekan “Mula Countdown”.</div>
+<div class="control">
+<button class="primary" id="start">▶ Mula Countdown</button>
+<button class="answer" id="showAnswer" disabled>👁️ Lihat Jawapan</button>
+<button class="next" id="next" disabled>Soalan Seterusnya →</button>
+<button id="bonusAll">⭐ Bonus +20</button>
+<button class="danger" id="reset">↻ Reset</button>
+</div>
+</div>
+
+<div class="card">
+<div class="teams" id="teams"></div>
+</div>
+</div>
+
+<div id="finish" class="card hidden"></div>
+</div>
+
+<script>
+const questions=[
+["Apakah maksud doa?",["Permohonan kepada Allah","Permainan bersama kawan","Perbualan dengan manusia","Nyanyian pada waktu lapang"],"A"],
+["Kepada siapakah kita berdoa?",["Allah","Guru","Kawan","Ibu bapa sahaja"],"A"],
+["Antara berikut, yang manakah termasuk dalam tatacara berdoa?",["Memuji Allah","Bermain","Bergurau","Menjerit"],"A"],
+["Apakah yang dilakukan selepas memuji Allah dalam tatacara berdoa?",["Berselawat kepada Nabi Muhammad SAW","Terus tidur","Bermain","Makan"],"A"],
+["Bagaimanakah keadaan hati ketika berdoa kepada Allah?",["Penuh yakin kepada Allah","Bermain-main","Marah","Sambil ketawa"],"A"],
+["Apakah yang dilakukan dengan tangan ketika berdoa?",["Menadah tangan","Menyembunyikan tangan","Bermain dengan tangan","Melambai"],"A"],
+["Ke arah manakah kita menghadap ketika berdoa?",["Kiblat","Belakang","Pintu","Mana-mana sahaja"],"A"],
+["Bagaimanakah suara yang sesuai ketika berdoa?",["Sederhana","Sangat kuat","Menjerit","Terlalu perlahan sehingga tidak kedengaran"],"A"],
+["Apakah sikap yang baik ketika memohon sesuatu dalam doa?",["Bersungguh-sungguh","Bermain-main","Mengejek","Ketawa"],"A"],
+["Antara berikut, yang manakah menunjukkan adab berdoa yang baik?",["Berdoa dengan penuh yakin dan rendah diri","Berdoa sambil bermain","Berdoa dengan suara menjerit","Berdoa sambil mentertawakan kawan"],"A"],
+["Apakah yang sebaiknya dilakukan sebelum memohon sesuatu dalam doa?",["Memuji Allah dan berselawat","Bermain dahulu","Bercakap kuat","Mengejek kawan"],"A"],
+["Mengapakah kita perlu berdoa dengan penuh yakin kepada Allah?",["Kerana Allah Maha Mendengar dan Maha Mengetahui","Kerana kawan menyuruh","Kerana doa ialah permainan","Kerana semua orang melihat"],"A"],
+["Apakah sikap yang sesuai ketika berdoa?",["Rendah diri dan bersungguh-sungguh","Sombong dan riang","Bermain dan ketawa","Marah kepada kawan"],"A"],
+["Antara berikut, yang manakah TIDAK beradab ketika berdoa?",["Bermain-main ketika berdoa","Menadah tangan","Menghadap kiblat","Berdoa dengan yakin"],"A"],
+["Di manakah arah yang sesuai untuk kita menghadap ketika berdoa?",["Kiblat","Belakang","Tingkap","Mana-mana arah tanpa sebab"],"A"]
+];
+
+let qi=0, scores=[0,0,0,0,0], timer=null, left=20;
+
+const $=id=>document.getElementById(id);
+
+function renderTeams(){
+  $("teams").innerHTML=scores.map((s,i)=>`
+    <div class="team">
+      <h3>Kumpulan ${i+1}</h3>
+      <div class="score" id="s${i}">${s}</div>
+      <button class="plus" data-i="${i}" data-points="10">+10 Betul</button>
+      <button class="bonus" data-i="${i}" data-points="20">⭐ +20 Bonus</button>
+      <button class="minus" data-i="${i}" data-points="-10">−10</button>
+    </div>`).join("");
+  $("teams").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    const i=+b.dataset.i,p=+b.dataset.points;
+    scores[i]=Math.max(0,scores[i]+p);
+    renderTeams();
+    $("msg").textContent=(p>0?`Kumpulan ${i+1} +${p} mata!`:`Kumpulan ${i+1} −10 mata.`);
+  }));
+}
+
+function render(){
+  const [q,o]=questions[qi];
+  $("qnum").textContent=qi+1;
+  $("question").textContent=q;
+  $("options").innerHTML=o.map((x,i)=>`<div class="opt">${"ABCD"[i]}. ${x}</div>`).join("");
+  $("msg").textContent="Bincang dan tulis jawapan pada whiteboard.";
+  $("timer").textContent=20;
+  left=20;
+  clearInterval(timer);
+  $("showAnswer").disabled=true;
+  $("next").disabled=true;
+}
+
+$("start").addEventListener("click",()=>{
+  clearInterval(timer);
+  left=20;
+  $("timer").textContent=left;
+  $("msg").textContent="Masa bermula! Tulis jawapan...";
+  $("showAnswer").disabled=true;
+  $("next").disabled=true;
+
+  timer=setInterval(()=>{
+    left--;
+    $("timer").textContent=left;
+    if(left<=0){
+      clearInterval(timer);
+      $("msg").textContent="✋ MASA TAMAT — ANGKAT PAPAN!";
+      $("showAnswer").disabled=false;
+    }
+  },1000);
+});
+
+$("showAnswer").addEventListener("click",()=>{
+  const correctIndex="ABCD".indexOf(questions[qi][2]);
+  const correctText=questions[qi][1][correctIndex];
+  $("msg").innerHTML=`✋ MASA TAMAT — ANGKAT PAPAN!
+    <div class="correct">✅ JAWAPAN BETUL: <strong>${questions[qi][2]}. ${correctText}</strong></div>`;
+  $("showAnswer").disabled=true;
+  $("next").disabled=false;
+});
+
+$("next").addEventListener("click",()=>{
+  if(qi<questions.length-1){
+    qi++;
+    render();
+  }else{
+    clearInterval(timer);
+    $("game").classList.add("hidden");
+    $("finish").classList.remove("hidden");
+    const max=Math.max(...scores);
+    const winners=scores.map((s,i)=>s===max?`Kumpulan ${i+1}`:null).filter(Boolean);
+    $("finish").innerHTML=`<div class="winner">🏆 TAHNIAH!<br>${winners.join(" & ")}<br><span style="font-size:20px">Juara dengan ${max} mata!</span></div>`;
+  }
+});
+
+$("bonusAll").addEventListener("click",()=>{
+  $("msg").textContent="Pilih kumpulan di bawah untuk beri Bonus +20.";
+});
+
+$("reset").addEventListener("click",()=>{
+  clearInterval(timer);
+  scores=[0,0,0,0,0];
+  qi=0;
+  $("game").classList.remove("hidden");
+  $("finish").classList.add("hidden");
+  renderTeams();
+  render();
+});
+
+renderTeams();
+render();
+</script>
+</body>
+</html>
